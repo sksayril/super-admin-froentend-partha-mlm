@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useToastContext } from '../contexts/ToastContext';
@@ -10,7 +10,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const { login, loading } = useAuth();
+  const { login, loading, isAuthenticated } = useAuth();
   const { success, error: showError } = useToastContext();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
@@ -19,6 +19,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle redirect when authentication state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('Login: User is now authenticated, redirecting to dashboard');
+      // Call onLogin callback if provided
+      if (onLogin) {
+        onLogin();
+      }
+    }
+  }, [isAuthenticated, onLogin]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,13 +59,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         return;
       }
 
-      await login(formData);
+      const loginResponse = await login(formData);
+      console.log('Login: Login successful, response:', loginResponse);
       success('Login Successful', 'Welcome back!');
       
-      // Call onLogin callback if provided (for backward compatibility)
-      if (onLogin) {
-        onLogin();
-      }
+      // Clear form data after successful login
+      setFormData({
+        email: '',
+        password: '',
+      });
+      
+      // Auto-reload the page after successful login to ensure proper redirect
+      setTimeout(() => {
+        console.log('Login: Auto-reloading page to ensure dashboard redirect');
+        window.location.reload();
+      }, 1000); // 1 second delay to show success message
     } catch (err: any) {
       console.error('Login error:', err);
       

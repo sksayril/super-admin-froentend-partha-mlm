@@ -85,6 +85,37 @@ export const useAuth = () => {
     initializeAuth();
   }, []);
 
+  // Add a listener for storage changes to handle multiple tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adminToken' || e.key === 'adminUser') {
+        debugAuth('Storage changed, reinitializing auth');
+        const token = authService.getToken();
+        const user = authService.getCurrentUser();
+        
+        if (token && user) {
+          setAuthState({
+            isAuthenticated: true,
+            user: user,
+            token: token,
+            loading: false,
+          });
+          apiClient.setToken(token);
+        } else {
+          setAuthState({
+            isAuthenticated: false,
+            user: null,
+            token: null,
+            loading: false,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Login function
   const login = useCallback(async (credentials: LoginRequest) => {
     debugAuth('Starting login process', { email: credentials.email });
@@ -94,14 +125,32 @@ export const useAuth = () => {
       const response = await authService.login(credentials);
       debugAuth('Login successful', { user: response.user, hasToken: !!response.token });
       
-      setAuthState({
+      // Update auth state immediately after successful login
+      const newAuthState = {
         isAuthenticated: true,
         user: response.user,
         token: response.token,
         loading: false,
+      };
+      
+      setAuthState(newAuthState);
+      debugAuth('Auth state updated after login', newAuthState);
+      
+      // Force a small delay to ensure state update is processed
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Double-check that the state was set correctly
+      const currentState = authService.isAuthenticated();
+      debugAuth('Final auth state check', { 
+        serviceAuth: currentState, 
+        hookAuth: newAuthState.isAuthenticated 
       });
-
-      debugAuth('Auth state updated after login', { isAuthenticated: true });
+      
+      // Ensure localStorage is properly updated for page reload
+      localStorage.setItem('adminToken', response.token);
+      localStorage.setItem('adminUser', JSON.stringify(response.user));
+      debugAuth('Auth data saved to localStorage for page reload');
+      
       return response;
     } catch (error) {
       debugAuth('Login failed', error);
@@ -147,11 +196,30 @@ export const useAuth = () => {
     setAuthState(prev => ({ ...prev, user }));
   }, []);
 
+  // Force refresh authentication state (useful for debugging)
+  const forceRefresh = useCallback(() => {
+    debugAuth('Force refreshing auth state');
+    const token = authService.getToken();
+    const user = authService.getCurrentUser();
+    
+    setAuthState({
+      isAuthenticated: !!(token && user),
+      user: user,
+      token: token,
+      loading: false,
+    });
+    
+    if (token) {
+      apiClient.setToken(token);
+    }
+  }, []);
+
   return {
     ...authState,
     login,
     logout,
     refreshToken,
     updateUser,
+    forceRefresh,
   };
 };

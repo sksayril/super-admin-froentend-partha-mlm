@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/authService';
 
 const AuthDebugger: React.FC = () => {
-  const { isAuthenticated, user, token, loading } = useAuth();
+  const { isAuthenticated, user, token, loading, forceRefresh } = useAuth();
 
   const handleTestLogin = async () => {
     try {
@@ -59,6 +59,18 @@ const AuthDebugger: React.FC = () => {
           className="block w-full bg-gray-600 hover:bg-gray-700 px-2 py-1 rounded text-xs"
         >
           Check Storage
+        </button>
+        <button
+          onClick={forceRefresh}
+          className="block w-full bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs"
+        >
+          Force Refresh
+        </button>
+        <button
+          onClick={() => window.location.reload()}
+          className="block w-full bg-purple-600 hover:bg-purple-700 px-2 py-1 rounded text-xs"
+        >
+          Reload Page
         </button>
       </div>
     </div>

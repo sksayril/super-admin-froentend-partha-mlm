@@ -26,6 +26,12 @@ class AuthService {
         // Set token in API client
         apiClient.setToken(token);
         
+        console.log('AuthService: Login successful, data stored', { 
+          hasToken: !!token, 
+          hasUser: !!user,
+          userEmail: user?.email 
+        });
+        
         return response.data;
       }
 

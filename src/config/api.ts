@@ -4,7 +4,7 @@ import { ApiConfig } from '../types/api';
 export const API_CONFIG: ApiConfig = {
   // baseURL: 'http://localhost:3100/api',
   baseURL: 'https://api.utpfund.live/api',
-  timeout: 10000, // 10 seconds
+  timeout: 300000, // 10 seconds
   headers: {
     'Content-Type': 'application/json',
   },
