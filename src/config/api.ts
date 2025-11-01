@@ -2,8 +2,8 @@ import { ApiConfig } from '../types/api';
 
 // API Configuration
 export const API_CONFIG: ApiConfig = {
-  // baseURL: 'http://localhost:3100/api',
-  baseURL: 'https://api.utpfund.live/api',
+  baseURL: 'http://localhost:3100/api',
+  // baseURL: 'https://api.utpfund.live/api',
   timeout: 300000, // 10 seconds
   headers: {
     'Content-Type': 'application/json',
@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   ADMIN: {
     CREATE: '/admin/create-admin',
     DEPOSIT_REQUESTS: '/admin/deposit-requests',
+    RECHARGE_WALLET: '/admin/recharge-admin-wallet',
   },
   USERS: {
     LIST: '/admin/users',

@@ -4,7 +4,9 @@ import {
   ApiResponse, 
   UserWithDetails, 
   UserListParams, 
-  UserListResponse 
+  UserListResponse,
+  RechargeAdminWalletRequest,
+  RechargeAdminWalletResponse
 } from '../types/api';
 
 // User Management Types
@@ -151,6 +153,27 @@ class UserService {
       throw new Error(response.message || 'Failed to update user status');
     } catch (error) {
       console.error('Toggle user status error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Recharge admin wallet (Super Admin only)
+   */
+  async rechargeAdminWallet(rechargeData: RechargeAdminWalletRequest): Promise<RechargeAdminWalletResponse> {
+    try {
+      const response: ApiResponse<RechargeAdminWalletResponse> = await apiClient.post(
+        API_ENDPOINTS.ADMIN.RECHARGE_WALLET,
+        rechargeData
+      );
+
+      if (response.success && response.data) {
+        return response.data;
+      }
+
+      throw new Error(response.message || 'Failed to recharge admin wallet');
+    } catch (error) {
+      console.error('Recharge admin wallet error:', error);
       throw error;
     }
   }

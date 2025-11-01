@@ -191,6 +191,26 @@ export interface RejectDepositRequestResponse {
   depositRequest: DepositRequest;
 }
 
+// Admin Wallet Recharge Types
+export interface RechargeAdminWalletRequest {
+  adminId: string;
+  amount: number;
+  walletType: 'mainWallet' | 'benefitWallet' | 'withdrawalWallet';
+  description?: string;
+}
+
+export interface RechargeAdminWalletResponse {
+  admin: {
+    id: string;
+    name: string;
+    email: string;
+    walletType: string;
+    amountRecharged: number;
+    balanceBefore: number;
+    balanceAfter: number;
+  };
+}
+
 // API Configuration
 export interface ApiConfig {
   baseURL: string;

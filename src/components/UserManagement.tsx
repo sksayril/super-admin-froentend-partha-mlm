@@ -7,12 +7,13 @@ import {
   ChevronLeft,
   ChevronRight,
   UserPlus,
-  RefreshCw
+  RefreshCw,
+  Wallet
 } from 'lucide-react';
 import { userService } from '../services/userService';
 import { adminService } from '../services/adminService';
 import { useToastContext } from '../contexts/ToastContext';
-import { UserWithDetails, UserListParams, CreateAdminRequest } from '../types/api';
+import { UserWithDetails, UserListParams, CreateAdminRequest, RechargeAdminWalletRequest } from '../types/api';
 import { validateForm, VALIDATION_RULES } from '../utils/validation';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -45,6 +46,15 @@ const UserManagement: React.FC = () => {
     password: ''
   });
   const [createAdminLoading, setCreateAdminLoading] = useState(false);
+  const [showRechargeWallet, setShowRechargeWallet] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<UserWithDetails | null>(null);
+  const [rechargeData, setRechargeData] = useState<RechargeAdminWalletRequest>({
+    adminId: '',
+    amount: 0,
+    walletType: 'mainWallet',
+    description: ''
+  });
+  const [rechargeLoading, setRechargeLoading] = useState(false);
 
   // Load users
   const loadUsers = async () => {
@@ -147,6 +157,42 @@ const UserManagement: React.FC = () => {
       } catch (err: any) {
         showError('Failed to delete user', err.message);
       }
+    }
+  };
+
+  // Open recharge wallet modal
+  const handleOpenRechargeWallet = (admin: UserWithDetails) => {
+    setSelectedAdmin(admin);
+    setRechargeData({
+      adminId: admin._id || admin.id,
+      amount: 0,
+      walletType: 'mainWallet',
+      description: ''
+    });
+    setShowRechargeWallet(true);
+  };
+
+  // Handle wallet recharge
+  const handleRechargeWallet = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRechargeLoading(true);
+
+    try {
+      // Validate form
+      if (rechargeData.amount <= 0) {
+        showError('Validation Error', 'Amount must be greater than 0');
+        return;
+      }
+
+      await userService.rechargeAdminWallet(rechargeData);
+      success('Wallet Recharged', `Admin wallet has been recharged with ${formatCurrency(rechargeData.amount)}`);
+      setShowRechargeWallet(false);
+      setSelectedAdmin(null);
+      loadUsers(); // Refresh the list
+    } catch (err: any) {
+      showError('Failed to recharge wallet', err.message);
+    } finally {
+      setRechargeLoading(false);
     }
   };
 
@@ -389,6 +435,15 @@ const UserManagement: React.FC = () => {
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
+                            {user.role === 'admin' && (
+                              <button
+                                onClick={() => handleOpenRechargeWallet(user)}
+                                className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-md transition-all duration-200 transform hover:scale-110"
+                                title="Recharge Wallet"
+                              >
+                                <Wallet className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleToggleStatus(userId, user.isActive || false)}
                               className={`p-1.5 rounded-md transition-all duration-200 transform hover:scale-110 ${
@@ -670,6 +725,80 @@ const UserManagement: React.FC = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recharge Wallet Modal */}
+      {showRechargeWallet && selectedAdmin && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-2xl rounded-2xl bg-white/95 backdrop-blur-sm">
+            <div className="mt-3">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Wallet className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Recharge Admin Wallet</h3>
+              </div>
+              <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50">
+                <p className="text-sm font-semibold text-gray-700">Admin: {selectedAdmin.firstName} {selectedAdmin.lastName}</p>
+                <p className="text-xs text-gray-600">{selectedAdmin.email}</p>
+              </div>
+              <form onSubmit={handleRechargeWallet} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Amount to Recharge</label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={rechargeData.amount}
+                    onChange={(e) => setRechargeData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/50 hover:bg-white/80"
+                    placeholder="Enter amount"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Wallet Type</label>
+                  <select
+                    value={rechargeData.walletType}
+                    onChange={(e) => setRechargeData(prev => ({ ...prev, walletType: e.target.value as 'mainWallet' | 'benefitWallet' | 'withdrawalWallet' }))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/50 hover:bg-white/80"
+                    required
+                  >
+                    <option value="mainWallet">💰 Main Wallet</option>
+                    <option value="benefitWallet">🎁 Benefit Wallet</option>
+                    <option value="withdrawalWallet">💸 Withdrawal Wallet</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">Description (Optional)</label>
+                  <textarea
+                    value={rechargeData.description}
+                    onChange={(e) => setRechargeData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white/50 hover:bg-white/80"
+                    placeholder="Enter description for this transaction"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowRechargeWallet(false)}
+                    className="px-6 py-3 text-sm font-semibold text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={rechargeLoading || rechargeData.amount <= 0}
+                    className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:transform-none shadow-lg"
+                  >
+                    {rechargeLoading ? 'Recharging...' : 'Recharge Wallet'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
