@@ -2,8 +2,8 @@ import { ApiConfig } from '../types/api';
 
 // API Configuration
 export const API_CONFIG: ApiConfig = {
-  baseURL: 'https://7cvccltb-3100.inc1.devtunnels.ms/api',
-  // baseURL: 'https://api.utpfund.live/api',
+  // baseURL: 'https://7cvccltb-3100.inc1.devtunnels.ms/api',
+  baseURL: 'https://api.utpfund.live/api',
   timeout: 300000, // 10 seconds
   headers: {
     'Content-Type': 'application/json',
