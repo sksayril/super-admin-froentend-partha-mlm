@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, Settings, LogOut, Menu, BarChart3, Bell, Shield, ChevronLeft, CreditCard } from 'lucide-react';
+import { Home, Users, Settings, LogOut, Menu, BarChart3, Bell, Shield, ChevronLeft, CreditCard, DollarSign } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface SidebarProps {
@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', color: 'from-blue-500 to-blue-600' },
     { id: 'users', icon: Users, label: 'Users', color: 'from-emerald-500 to-emerald-600' },
+    { id: 'revenue', icon: DollarSign, label: 'Revenue', color: 'from-green-500 to-green-600' },
     { id: 'payment-requests', icon: CreditCard, label: 'Payment Requests', color: 'from-amber-500 to-amber-600' },
     { id: 'analytics', icon: BarChart3, label: 'Analytics', color: 'from-purple-500 to-purple-600' },
     { id: 'notifications', icon: Bell, label: 'Notifications', color: 'from-orange-500 to-orange-600' },

@@ -2,7 +2,7 @@ import { ApiConfig } from '../types/api';
 
 // API Configuration
 export const API_CONFIG: ApiConfig = {
-  baseURL: 'http://localhost:3100/api',
+  baseURL: 'https://7cvccltb-3100.inc1.devtunnels.ms/api',
   // baseURL: 'https://api.utpfund.live/api',
   timeout: 300000, // 10 seconds
   headers: {
@@ -33,6 +33,10 @@ export const API_ENDPOINTS = {
   DASHBOARD: {
     STATS: '/admin/dashboard/stats',
     ANALYTICS: '/admin/dashboard/analytics',
+    SUPER_ADMIN: '/admin/super-admin/dashboard',
+  },
+  REVENUE: {
+    LIST: '/admin/super-admin/revenue',
   },
 } as const;
 

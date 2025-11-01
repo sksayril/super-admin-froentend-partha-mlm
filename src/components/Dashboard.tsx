@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import DashboardContent from './DashboardContent';
 import UsersContent from './UsersContent';
+import RevenueContent from './RevenueContent';
 import PaymentRequests from './PaymentRequests';
 import PaymentRequestDetails from './PaymentRequestDetails';
 import { DepositRequest } from '../types/api';
@@ -45,6 +46,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         return <DashboardContent />;
       case 'users':
         return <UsersContent />;
+      case 'revenue':
+        return <RevenueContent />;
       case 'payment-requests':
         return <PaymentRequests onViewDetails={handleViewPaymentRequest} />;
       default:
